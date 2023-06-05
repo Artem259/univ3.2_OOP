@@ -71,20 +71,20 @@ class Dsa:
         N = 224
         L = 2048
         self.p, self.q, self.g = _generate_params(L, N)
-        self.x, self.y = _generate_keys(self.g, self.p, self.q)
 
     def sign(self, message):
+        private, public = _generate_keys(self.g, self.p, self.q)
         while True:
             k = randrange(2, self.q)
             r = powmod(self.g, k, self.p) % self.q
             m = int(sha1(message).hexdigest(), 16)
             try:
-                s = (invert(k, self.q) * (m + self.x * r)) % self.q
-                return r, s
+                s = (invert(k, self.q) * (m + private * r)) % self.q
+                return private, public, (r, s)
             except ZeroDivisionError:
                 pass
 
-    def verify(self, message, r, s):
+    def verify(self, message, r, s, public_key):
         if not _validate_signature(r, s, self.q):
             return False
         try:
@@ -95,5 +95,5 @@ class Dsa:
         u1 = (m * w) % self.q
         u2 = (r * w) % self.q
 
-        v = (powmod(self.g, u1, self.p) * powmod(self.y, u2, self.p)) % self.p % self.q
+        v = (powmod(self.g, u1, self.p) * powmod(public_key, u2, self.p)) % self.p % self.q
         return v == r

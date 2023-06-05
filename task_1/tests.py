@@ -9,12 +9,14 @@ class TestDsa(unittest.TestCase):
     def test_1(self):
         message = "Hello, World!"
         message_bytes = str.encode(message, "ascii")
-        r, s = self.dsa.sign(message_bytes)
+        _, public, (r, s) = self.dsa.sign(message_bytes)
 
-        self.assertTrue(self.dsa.verify(message_bytes, r, s))
-        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s))
-        self.assertFalse(self.dsa.verify(message_bytes, r, s + 1))
-        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s + 1))
+        self.assertTrue(self.dsa.verify(message_bytes, r, s, public))
+        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s, public))
+        self.assertFalse(self.dsa.verify(message_bytes, r, s + 1, public))
+        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s + 1, public))
+
+        self.assertFalse(self.dsa.verify(message_bytes, r, s, public + 1))
 
 
 if __name__ == "__main__":
