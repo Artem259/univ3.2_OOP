@@ -50,12 +50,6 @@ def _generate_g(p, q):
     return g
 
 
-def _generate_keys(g, p, q):
-    x = randrange(2, q)
-    y = powmod(g, x, p)
-    return x, y
-
-
 def _generate_params(L, N):
     p, q = _p_q_gen(L, N)
     g = _generate_g(p, q)
@@ -72,15 +66,19 @@ class Dsa:
         L = 2048
         self.p, self.q, self.g = _generate_params(L, N)
 
-    def sign(self, message):
-        private, public = _generate_keys(self.g, self.p, self.q)
+    def public_key_gen(self, private_key):
+        if not (2 < private_key < self.q):
+            raise ValueError("2 < private_key < self.q")
+        return powmod(self.g, private_key, self.p)
+
+    def sign(self, message, private_key):
         while True:
             k = randrange(2, self.q)
             r = powmod(self.g, k, self.p) % self.q
             m = int(sha1(message).hexdigest(), 16)
             try:
-                s = (invert(k, self.q) * (m + private * r)) % self.q
-                return private, public, (r, s)
+                s = (invert(k, self.q) * (m + private_key * r)) % self.q
+                return r, s
             except ZeroDivisionError:
                 pass
 

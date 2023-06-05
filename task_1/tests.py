@@ -8,15 +8,18 @@ class TestDsa(unittest.TestCase):
 
     def test_1(self):
         message = "Hello, World!"
+        private_key = 0x0123456789abcdef
+
         message_bytes = str.encode(message, "ascii")
-        _, public, (r, s) = self.dsa.sign(message_bytes)
+        public_key = self.dsa.public_key_gen(private_key)
+        r, s = self.dsa.sign(message_bytes, private_key)
 
-        self.assertTrue(self.dsa.verify(message_bytes, r, s, public))
-        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s, public))
-        self.assertFalse(self.dsa.verify(message_bytes, r, s + 1, public))
-        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s + 1, public))
+        self.assertTrue(self.dsa.verify(message_bytes, r, s, public_key))
 
-        self.assertFalse(self.dsa.verify(message_bytes, r, s, public + 1))
+        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s, public_key))
+        self.assertFalse(self.dsa.verify(message_bytes, r, s + 1, public_key))
+        self.assertFalse(self.dsa.verify(message_bytes, r + 1, s + 1, public_key))
+        self.assertFalse(self.dsa.verify(message_bytes, r, s, public_key + 1))
 
 
 if __name__ == "__main__":
